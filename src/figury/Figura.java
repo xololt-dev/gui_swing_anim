@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.util.Random;
 
 /**
@@ -26,20 +27,20 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 	protected Shape shape;
 	// przeksztalcenie obiektu
 	protected AffineTransform aft;
-
 	// przesuniecie
-	private int dx, dy;
+	protected int dx, dy;
 	// rozciaganie
-	private double sf;
+	protected double sf;
 	// kat obrotu
-	private double an;
-	private int delay;
-	private int width;
-	private int height;
-	private Color clr;
+	protected double an;
+	protected int delay;
+	protected int width;
+	protected int height;
+	protected Color clr;
 
 	protected static final Random rand = new Random();
 
+	public Figura(){}
 	public Figura(Graphics2D buf, int del, int w, int h) {
 		delay = del;
 		buffer = buf;
@@ -50,6 +51,9 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 		dy = 1 + rand.nextInt(5);
 		sf = 1 + 0.05 * rand.nextDouble();
 		an = 0.1 * rand.nextDouble();
+
+		aft = new AffineTransform(1,0,0,1,0,0);
+		//area = new Area(new Rectangle());
 
 		clr = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
 		// reszta musi być zawarta w realizacji klasy Figure
@@ -111,4 +115,59 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 		buffer.draw(shape);
 	}
 
+}
+
+class Kwadrat extends Figura{
+	//public Kwadrat(){super();}
+	public Kwadrat(Graphics2D buf, int del, int w, int h) {
+		super(buf, del, w, h);
+	}
+
+	@Override
+	public void run() {
+		// przesuniecie na srodek
+		aft.translate(100, 100);
+		if(area == null) {
+			Rectangle a = new Rectangle(rand.nextInt(100),rand.nextInt(100));
+			area = new Area(a);
+		}
+		area.transform(aft);
+		shape = area;
+
+		while (true) {
+			// przygotowanie nastepnego kadru
+			shape = nextFrame();
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+			}
+		}
+	}
+}
+
+class Elipsa extends Figura{
+	public Elipsa(Graphics2D buf, int del, int w, int h) {
+		super(buf, del, w, h);
+	}
+
+	@Override
+	public void run() {
+		// przesuniecie na srodek
+		aft.translate(100, 100);
+		if(area == null) {
+			Ellipse2D.Float a = new Ellipse2D.Float(rand.nextInt(100),rand.nextInt(100), rand.nextInt(100), rand.nextInt(100));
+			area = new Area(a);
+		}
+		area.transform(aft);
+		shape = area;
+
+		while (true) {
+			// przygotowanie nastepnego kadru
+			shape = nextFrame();
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+			}
+		}
+	}
 }
