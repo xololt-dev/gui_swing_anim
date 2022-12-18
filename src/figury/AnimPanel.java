@@ -26,7 +26,7 @@ public class AnimPanel extends JPanel implements ActionListener {
 	// wykreslacz bufora
 	Graphics2D buffer;
 
-	private int delay = 60;
+	private int delay = 10;
 
 	private Timer timer;
 
@@ -50,8 +50,6 @@ public class AnimPanel extends JPanel implements ActionListener {
 	}
 
 	void addFig() {
-		/*Figura fig = (numer++ % 2 == 0) ? new Kwadrat(buffer, delay, getWidth(), getHeight())
-				: new Elipsa(buffer, delay, getWidth(), getHeight());*/
 		Elipsa fig = new Elipsa(buffer, delay, getWidth(), getHeight());
 		elipses.add(fig);
 		timer.addActionListener(fig);
@@ -84,8 +82,8 @@ public class AnimPanel extends JPanel implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		checkBounce();
 		checkClosest();
-		//System.out.println("Kolejka");
 		device.drawImage(image, 0, 0, null);
 		buffer.clearRect(0, 0, getWidth(), getHeight());
 	}
@@ -114,6 +112,36 @@ public class AnimPanel extends JPanel implements ActionListener {
 				}
 			}
 		}
-		System.out.println(tempL + " " + tempR);
+		Racket racketL = rackets.get(0);
+		Racket racketR = rackets.get(1);
+		racketR.closest = tempR;
+		racketL.closest = tempL;
+		rackets.set(0, racketL);
+		rackets.set(1, racketR);
+		//if(tempR != null && tempL != null) System.out.println(tempL.dx + " " + tempR.dx);
+	}
+
+	void checkBounce(){
+		// 0 Closest goes to left, 1 goes to right
+		Elipsa temp;
+		boolean bounce = false;
+		for(int i = 0; i < elipses.size(); i++) {
+			temp = elipses.get(i);
+			for (int j = 0; j < rackets.size(); j++) {
+				if (temp.area.intersects(rackets.get(j).area.getBounds2D())) {
+					if((temp.dx < 0) && j == 0){
+						temp.dx = -temp.dx;
+						bounce = true;
+					}
+					else if((temp.dx > 0) && j == 1){
+						temp.dx = -temp.dx;
+						bounce = true;
+					}
+				}
+			}
+			if(bounce){
+				elipses.set(i, temp);
+			}
+		}
 	}
 }

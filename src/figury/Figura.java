@@ -58,7 +58,7 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 		//aft = new AffineTransform(1,0,0,1,0,0);
 		aft = new AffineTransform();
 
-		clr = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
+		clr = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255), 255);
 		// reszta musi być zawarta w realizacji klasy Figure
 		// (tworzenie figury i przygotowanie transformacji)
 
@@ -107,7 +107,6 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 		aft.translate(dx, dy);
 		// przeksztalcenie obiektu
 		area.transform(aft);
-		//System.out.println(aft);
 		return area;
 	}
 
@@ -154,11 +153,14 @@ class Kwadrat extends Figura{
 
 class Racket extends Kwadrat{
 	protected int number;
-	protected Elipsa closest;
+	protected Elipsa closest = null;
 	public Racket(Graphics2D buf, int del, int w, int h, int num) {
 		super(buf, del, w, h);
 		number = num;
 		dx = 0;
+		dy = 5;
+		//clr = new Color(0, 255, 255, 255);
+		clr = new Color(255,192,203, 255);
 	}
 
 	@Override
@@ -191,34 +193,56 @@ class Racket extends Kwadrat{
 		area = new Area(area);
 		aft = new AffineTransform();
 		Rectangle bounds = area.getBounds();
+
 		/*int cx;
 		if(number == 1)		cx = 21;
 		else cx = 381;*/
 		//System.out.println(bounds.y + " " + bounds.height/2);
 		int cy = bounds.y + bounds.height / 2;
+		boolean rebound = false;
 		// odbicie
-		if (cy < height/2 || cy > 219 - bounds.height/2)
+		if ((cy < height/2) || (cy > 219 - bounds.height/2)) {
+			rebound = true;
+		}
+		if(closest != null && rebound == false){
+			if(closest.area.getBounds2D().getY() < area.getBounds2D().getY()){
+				if(closest.dy < 0 && dy > 0) {
+					rebound = true;
+					//dy = -dy;
+					//System.out.println("Zmiana " + number);
+				}
+			} else {
+				if(closest.dy > 0 && dy < 0){
+					rebound = true;
+					//dy = -dy;
+					//System.out.println("Zmiana " + number);
+				}
+			}
+		}
+		if(rebound){
 			dy = -dy;
+			System.out.println("Zmiana " + number);
+		}
 		// konstrukcja przeksztalcenia
 		aft.translate(dx, dy);
 		// przeksztalcenie obiektu
 		area.transform(aft);
 		return area;
 	}
-
 }
 
 class Elipsa extends Figura{
 	public Elipsa(Graphics2D buf, int del, int w, int h) {
 		super(buf, del, w, h);
+		dx = 1;
 	}
 
 	@Override
 	public void run() {
 		// przesuniecie na srodek
-		aft.translate(100, 100);
+		aft.translate(211, 110);
 		if(area == null) {
-			Ellipse2D.Float a = new Ellipse2D.Float(rand.nextInt(100),rand.nextInt(100), rand.nextInt(100), rand.nextInt(100));
+			Ellipse2D.Float a = new Ellipse2D.Float(rand.nextInt(100),rand.nextInt(100), 10, 10);
 			area = new Area(a);
 		}
 		area.transform(aft);
