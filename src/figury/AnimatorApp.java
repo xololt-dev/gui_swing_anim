@@ -10,12 +10,15 @@ import javax.swing.JButton;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 public class AnimatorApp extends JFrame {
 
 	/**
 	 * 
 	 */
+	//ArrayList<Racket> rackets = new ArrayList<>();
+	//ArrayList<Elipsa> elipses = new ArrayList<>();
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 
@@ -56,6 +59,9 @@ public class AnimatorApp extends JFrame {
 			@Override
 			public void run() {
 				kanwa.initialize();
+				for(int i = 0; i < 2; i++){
+					kanwa.addRacket(i);
+				}
 			}
 		});
 
@@ -67,7 +73,7 @@ public class AnimatorApp extends JFrame {
 		});
 		btnAdd.setBounds(10, 239, 80, 23);
 		contentPane.add(btnAdd);
-		
+
 		JButton btnAnimate = new JButton("Animate");
 		btnAnimate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -76,7 +82,6 @@ public class AnimatorApp extends JFrame {
 		});
 		btnAnimate.setBounds(100, 239, 80, 23);
 		contentPane.add(btnAnimate);
-		
 	}
 
 }

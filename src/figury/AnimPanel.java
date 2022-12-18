@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -14,6 +15,8 @@ public class AnimPanel extends JPanel implements ActionListener {
 	/**
 	 * 
 	 */
+	ArrayList<Racket> rackets = new ArrayList<>();
+	ArrayList<Elipsa> elipses = new ArrayList<>();
 	private static final long serialVersionUID = 1L;
 
 	// bufor
@@ -23,7 +26,7 @@ public class AnimPanel extends JPanel implements ActionListener {
 	// wykreslacz bufora
 	Graphics2D buffer;
 
-	private int delay = 70;
+	private int delay = 60;
 
 	private Timer timer;
 
@@ -47,11 +50,29 @@ public class AnimPanel extends JPanel implements ActionListener {
 	}
 
 	void addFig() {
-		Figura fig = (numer++ % 2 == 0) ? new Kwadrat(buffer, delay, getWidth(), getHeight())
-				: new Elipsa(buffer, delay, getWidth(), getHeight());
+		/*Figura fig = (numer++ % 2 == 0) ? new Kwadrat(buffer, delay, getWidth(), getHeight())
+				: new Elipsa(buffer, delay, getWidth(), getHeight());*/
+		Elipsa fig = new Elipsa(buffer, delay, getWidth(), getHeight());
+		elipses.add(fig);
 		timer.addActionListener(fig);
 		new Thread(fig).start();
 	}
+
+	void addRacket(int number)
+	{
+		Racket fig = new Racket(buffer, delay, 20, 100, number);
+		rackets.add(fig);
+		timer.addActionListener(fig);
+		new Thread(fig).start();
+	}
+	/*void addFig() {
+		Figura fig = (numer++ % 2 == 0) ? new Racket(buffer, delay, getWidth(), getHeight(), numer%2)
+				: new Elipsa(buffer, delay, getWidth(), getHeight());
+		/*Figura fig = (numer++ % 2 == 0) ? new Kwadrat(buffer, delay, getWidth(), getHeight())
+				: new Elipsa(buffer, delay, getWidth(), getHeight());*/
+		/*timer.addActionListener(fig);
+		new Thread(fig).start();
+	}*/
 
 	void animate() {
 		if (timer.isRunning()) {
@@ -63,7 +84,36 @@ public class AnimPanel extends JPanel implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		checkClosest();
+		//System.out.println("Kolejka");
 		device.drawImage(image, 0, 0, null);
 		buffer.clearRect(0, 0, getWidth(), getHeight());
+	}
+
+	public void checkClosest(){
+		// 0 Closest goes to left, 1 goes to right
+		Elipsa tempL = null;
+		Elipsa tempR = null;
+		for(int i = 0; i < elipses.size(); i++){
+			Elipsa a = elipses.get(i);
+			if(a.dx > 0){
+				// If no object selected, select as first. Otherwise check conditions if swap needed
+				if(tempR == null){
+					tempR = a;
+				}
+				else{ // If incoming object is gonna be the first to get to the right side, swap objects
+					if((381 - tempR.area.getBounds2D().getMaxX())/tempR.dx > (381 - a.area.getBounds2D().getMaxX())/a.dx) tempR = a;
+				}
+			}
+			else{
+				if(tempL == null){
+					tempL = a;
+				}
+				else{ // If incoming object is gonna be the first to get to the right side, swap objects
+					if((21 - tempL.area.getBounds2D().getX())/tempL.dx > (21 - a.area.getBounds2D().getX())/a.dx) tempL = a;
+				}
+			}
+		}
+		System.out.println(tempL + " " + tempR);
 	}
 }
