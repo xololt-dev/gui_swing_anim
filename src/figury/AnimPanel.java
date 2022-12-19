@@ -90,6 +90,7 @@ public class AnimPanel extends JPanel implements ActionListener {
 
 	public void checkClosest(){
 		// 0 Closest goes to left, 1 goes to right
+		// Temporary elipses
 		Elipsa tempL = null;
 		Elipsa tempR = null;
 		for(int i = 0; i < elipses.size(); i++){
@@ -100,7 +101,7 @@ public class AnimPanel extends JPanel implements ActionListener {
 					tempR = a;
 				}
 				else{ // If incoming object is gonna be the first to get to the right side, swap objects
-					if((381 - tempR.area.getBounds2D().getMaxX())/tempR.dx > (381 - a.area.getBounds2D().getMaxX())/a.dx) tempR = a;
+					if(((381 - tempR.area.getBounds2D().getMaxX())/tempR.dx) > ((381 - a.area.getBounds2D().getMaxX())/a.dx)) tempR = a;
 				}
 			}
 			else{
@@ -108,7 +109,7 @@ public class AnimPanel extends JPanel implements ActionListener {
 					tempL = a;
 				}
 				else{ // If incoming object is gonna be the first to get to the right side, swap objects
-					if((21 - tempL.area.getBounds2D().getX())/tempL.dx > (21 - a.area.getBounds2D().getX())/a.dx) tempL = a;
+					if((41 - tempL.area.getBounds2D().getX())/tempL.dx > (41 - a.area.getBounds2D().getX())/a.dx) tempL = a;
 				}
 			}
 		}
@@ -118,24 +119,32 @@ public class AnimPanel extends JPanel implements ActionListener {
 		racketL.closest = tempL;
 		rackets.set(0, racketL);
 		rackets.set(1, racketR);
-		//if(tempR != null && tempL != null) System.out.println(tempL.dx + " " + tempR.dx);
 	}
 
 	void checkBounce(){
 		// 0 Closest goes to left, 1 goes to right
+		// Creating temporary variables
 		Elipsa temp;
 		boolean bounce = false;
 		for(int i = 0; i < elipses.size(); i++) {
 			temp = elipses.get(i);
 			for (int j = 0; j < rackets.size(); j++) {
+				// Checking if ball hits the racket
 				if (temp.area.intersects(rackets.get(j).area.getBounds2D())) {
 					if((temp.dx < 0) && j == 0){
-						temp.dx = -temp.dx;
-						bounce = true;
+						// If it does and racket is not going off the edge, bounce = true
+						if(!temp.bounceR){
+							//temp.dx = -temp.dx;
+							temp.bounceR = true;
+							bounce = true;
+						}
 					}
 					else if((temp.dx > 0) && j == 1){
-						temp.dx = -temp.dx;
-						bounce = true;
+						if(!temp.bounceR){
+							//temp.dx = -temp.dx;
+							temp.bounceR = true;
+							bounce = true;
+						}
 					}
 				}
 			}

@@ -34,12 +34,14 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 	protected double sf;
 	// kat obrotu
 	protected double an;
+	// Bounce off of walls
+	protected boolean bounce;
+	// Does it bounce off of racket
+	protected boolean bounceR;
 	protected int delay;
 	protected int width;
 	protected int height;
 	protected Color clr;
-	protected int positionX;
-	protected int positionY;
 
 	protected static final Random rand = new Random();
 
@@ -70,8 +72,6 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 		aft.translate(300, 100);
 		area.transform(aft);
 		shape = area;
-		//positionX;
-		//positionY;
 
 		while (true) {
 			// przygotowanie nastepnego kadru
@@ -89,20 +89,60 @@ public abstract class Figura implements Runnable, ActionListener/*, Shape*/ {
 		area = new Area(area);
 		aft = new AffineTransform();
 		Rectangle bounds = area.getBounds();
-		int cx = bounds.x + bounds.width / 2;
-		int cy = bounds.y + bounds.height / 2;
+		//int cx = bounds.x + bounds.width / 2;
+		//int cy = bounds.y + bounds.height / 2;
+		int cx = (int)bounds.getMaxX();
+		int cy = (int)bounds.getMaxY();
 		// odbicie
-		if (cx < 0 || cx > width)
-			dx = -dx;
-		if (cy < 0 || cy > height)
-			dy = -dy;
+		if (bounds.getX() < 0 || cx > width)
+		{
+			bounce = true;
+			if(bounds.getX() < 0)
+			{
+				cx = 0;
+			}
+			else if(cx > width){
+				cx = width;
+			}
+		}
+		if((bounce && !bounceR) || (!bounce && bounceR)){
+			if(bounce){
+				if(((cx == width) && (dx > 0)) ||((cx == 0)&&(dx < 0))){
+					dx = -dx;
+				}
+			}
+			else{
+				dx = -dx;
+			}
+			//System.out.println("cx: " + cx + " width:" + width + " dx: " + dx);
+			bounce = false;
+			bounceR = false;
+		}
+
+		if (bounds.getY() < 0 || cy > height)
+		{
+			//System.out.println("cy: " + bounds.getY() + " height:" + height);
+			if(bounds.getY() < 0){
+				cy = 0;
+				if(dy < 0){
+					dy = -dy;
+				}
+			}
+			else if (cy > height){
+				cy = height;
+				if(dy > 0){
+					dy = -dy;
+				}
+			}
+		}
+
 		// zwiekszenie lub zmniejszenie
-		if (bounds.height > height / 3 || bounds.height < 10)
-			sf = 1 / sf;
+		//if (bounds.height > height / 3 || bounds.height < 10)
+		//	sf = 1 / sf;
 		// konstrukcja przeksztalcenia
 		aft.translate(cx, cy);
 		aft.scale(sf, sf);
-		aft.rotate(an);
+		//aft.rotate(an);
 		aft.translate(-cx, -cy);
 		aft.translate(dx, dy);
 		// przeksztalcenie obiektu
@@ -126,7 +166,6 @@ class Kwadrat extends Figura{
 	//public Kwadrat(){super();}
 	public Kwadrat(Graphics2D buf, int del, int w, int h) {
 		super(buf, del, w, h);
-		//width = 20;
 	}
 
 	@Override
@@ -159,8 +198,8 @@ class Racket extends Kwadrat{
 		number = num;
 		dx = 0;
 		dy = 5;
-		//clr = new Color(0, 255, 255, 255);
-		clr = new Color(255,192,203, 255);
+		clr = new Color(0, 255, 255, 255);
+		//clr = new Color(255,192,203, 255);
 	}
 
 	@Override
@@ -192,6 +231,7 @@ class Racket extends Kwadrat{
 		// aby nie przeszkadzalo w wykreslaniu
 		area = new Area(area);
 		aft = new AffineTransform();
+		Elipsa closestTemp = closest;
 		Rectangle bounds = area.getBounds();
 
 		/*int cx;
@@ -202,27 +242,41 @@ class Racket extends Kwadrat{
 		boolean rebound = false;
 		// odbicie
 		if ((cy < height/2) || (cy > 219 - bounds.height/2)) {
+			//if(cy < height/2){
+			//	cy = height/2;
+			//}
+			//else{
+			//	cy = 219 - bounds.height/2;
+			//}
 			rebound = true;
 		}
-		if(closest != null && rebound == false){
-			if(closest.area.getBounds2D().getY() < area.getBounds2D().getY()){
-				if(closest.dy < 0 && dy > 0) {
+		if(closestTemp != null && !rebound){
+			if(closestTemp.area.getBounds2D().getY() < area.getBounds2D().getY()){
+				//if((closestTemp.dy < 0 && dy > 0) || (closestTemp.dy > 0 && dy < 0)) {
+				if((closestTemp.dy < 0 && dy > 0) || (closestTemp.dy > 0 && dy > 0)) {
 					rebound = true;
-					//dy = -dy;
-					//System.out.println("Zmiana " + number);
 				}
-			} else {
-				if(closest.dy > 0 && dy < 0){
+				if(dy == 0) dy = 5;
+			} else if (closestTemp.area.getBounds2D().getMaxY() > area.getBounds2D().getMaxY()) {
+				if((closestTemp.dy < 0 && dy < 0) || (closestTemp.dy > 0 && dy < 0)){
 					rebound = true;
-					//dy = -dy;
-					//System.out.println("Zmiana " + number);
 				}
+				if(dy == 0) dy = 5;
+			} else if((closestTemp.area.getBounds2D().getY() > area.getBounds2D().getY()) && (closestTemp.area.getBounds2D().getMaxY() < area.getBounds2D().getMaxY())) {
+				// Stop the racket
+				if (dy != 0) dy = 0;
 			}
+			//System.out.println(closestTemp.area.getBounds2D().getY() + " " + closestTemp.dy + " racket: " + area.getBounds2D().getY() + " " + dy);
 		}
 		if(rebound){
-			dy = -dy;
-			System.out.println("Zmiana " + number);
+			if(dy == 0) {
+				dy = 5;
+			}
+			else{
+				dy = -dy;
+			}
 		}
+		else if(!rebound && closestTemp == null) {dy = 0;}
 		// konstrukcja przeksztalcenia
 		aft.translate(dx, dy);
 		// przeksztalcenie obiektu
@@ -235,6 +289,7 @@ class Elipsa extends Figura{
 	public Elipsa(Graphics2D buf, int del, int w, int h) {
 		super(buf, del, w, h);
 		dx = 1;
+		sf = 1;
 	}
 
 	@Override
@@ -247,8 +302,6 @@ class Elipsa extends Figura{
 		}
 		area.transform(aft);
 		shape = area;
-		positionX = 100;
-		positionY = 100;
 
 		while (true) {
 			// przygotowanie nastepnego kadru

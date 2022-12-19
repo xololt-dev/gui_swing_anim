@@ -17,8 +17,6 @@ public class AnimatorApp extends JFrame {
 	/**
 	 * 
 	 */
-	//ArrayList<Racket> rackets = new ArrayList<>();
-	//ArrayList<Elipsa> elipses = new ArrayList<>();
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 
